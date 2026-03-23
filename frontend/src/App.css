@@ -306,6 +306,11 @@ button.danger {
   color: #9c5c02;
 }
 
+.role-pill.live {
+  background: rgba(17, 75, 95, 0.1);
+  color: #114b5f;
+}
+
 .customer-note {
   display: grid;
   gap: 0.5rem;
