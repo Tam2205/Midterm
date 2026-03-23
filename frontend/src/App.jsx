@@ -149,37 +149,6 @@ function App() {
 
   return (
     <div className="page">
-      <header className="hero-shell panel">
-        <div className="hero-copy">
-          <p className="tag">React + Express REST API + MongoDB</p>
-          <h1>ElectroHub Product Manager</h1>
-          <p className="hero-text">
-            Ung dung full-stack quan ly san pham voi backend Express, frontend React, REST API va MongoDB. Du lieu goc duoc seed tu products.json va file nay duoc giu nguyen.
-          </p>
-
-          <div className="hero-meta">
-            <span className="role-pill live">Backend 5000</span>
-            <span className="role-pill live">Frontend 5173</span>
-            <span className="hero-hint">Ho tro GET, POST, PUT, DELETE, filter category va search theo ten.</span>
-          </div>
-        </div>
-
-        <div className="hero-stats">
-          <div className="stat-card accent">
-            <span>Products</span>
-            <strong>{stats.totalProducts}</strong>
-          </div>
-          <div className="stat-card">
-            <span>Total stock</span>
-            <strong>{stats.totalStock}</strong>
-          </div>
-          <div className="stat-card">
-            <span>Inventory value</span>
-            <strong>${stats.totalValue.toLocaleString()}</strong>
-          </div>
-        </div>
-      </header>
-
       <section className="toolbar panel">
         <form className="search-form" onSubmit={handleSearchSubmit}>
           <input
