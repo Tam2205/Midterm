@@ -3,7 +3,7 @@ import axios from 'axios'
 import './App.css'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-const ROLE_STORAGE_KEY = 'midterm-role'
+const AUTH_STORAGE_KEY = 'midterm-auth'
 
 const initialForm = {
   name: '',
@@ -13,11 +13,21 @@ const initialForm = {
   stock: '',
 }
 
+const initialLoginForm = {
+  role: 'user',
+  username: 'user',
+  password: 'user123',
+}
+
 function App() {
   const [products, setProducts] = useState([])
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All')
-  const [role, setRole] = useState(() => localStorage.getItem(ROLE_STORAGE_KEY) || 'customer')
+  const [auth, setAuth] = useState(() => {
+    const stored = localStorage.getItem(AUTH_STORAGE_KEY)
+    return stored ? JSON.parse(stored) : null
+  })
+  const [loginForm, setLoginForm] = useState(initialLoginForm)
   const [formData, setFormData] = useState(initialForm)
   const [editingId, setEditingId] = useState(null)
   const [selectedProduct, setSelectedProduct] = useState(null)
@@ -25,14 +35,16 @@ function App() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
 
-  const api = axios.create({
-    baseURL: API_BASE_URL,
-    headers: {
-      'x-user-role': role,
-    },
-  })
+  const api = useMemo(() => {
+    const headers = auth?.token ? { Authorization: `Bearer ${auth.token}` } : {}
+    return axios.create({
+      baseURL: API_BASE_URL,
+      headers,
+    })
+  }, [auth?.token])
 
-  const isAdmin = role === 'admin'
+  const isAdmin = auth?.user?.role === 'admin'
+  const currentRole = auth?.user?.role || 'guest'
 
   const categories = useMemo(() => {
     const unique = new Set(products.map((item) => item.category))
@@ -50,8 +62,13 @@ function App() {
   }, [products])
 
   useEffect(() => {
-    localStorage.setItem(ROLE_STORAGE_KEY, role)
-  }, [role])
+    if (auth) {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth))
+      return
+    }
+
+    localStorage.removeItem(AUTH_STORAGE_KEY)
+  }, [auth])
 
   const loadProducts = async () => {
     setLoading(true)
@@ -87,7 +104,43 @@ function App() {
 
   useEffect(() => {
     loadProducts()
-  }, [category, role])
+  }, [category, api])
+
+  const handleRolePresetChange = (role) => {
+    setLoginForm({
+      role,
+      username: role === 'admin' ? 'admin' : 'user',
+      password: role === 'admin' ? 'admin123' : 'user123',
+    })
+    setError('')
+    setMessage('')
+  }
+
+  const handleLoginInputChange = (event) => {
+    const { name, value } = event.target
+    setLoginForm((current) => ({ ...current, [name]: value }))
+  }
+
+  const handleLogin = async (event) => {
+    event.preventDefault()
+    setError('')
+    setMessage('')
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, loginForm)
+      setAuth(response.data)
+      setMessage(`Dang nhap thanh cong voi quyen ${response.data.user.role}`)
+    } catch (apiError) {
+      setError(apiError.response?.data?.message || 'Dang nhap that bai')
+    }
+  }
+
+  const handleLogout = () => {
+    setAuth(null)
+    resetForm()
+    setMessage('Da dang xuat')
+    setError('')
+  }
 
   const handleSearchSubmit = async (event) => {
     event.preventDefault()
@@ -106,7 +159,7 @@ function App() {
 
   const handleEdit = (product) => {
     if (!isAdmin) {
-      setError('Customer khong co quyen chinh sua san pham')
+      setError('User khong co quyen chinh sua san pham')
       return
     }
 
@@ -122,7 +175,7 @@ function App() {
 
   const handleDelete = async (id) => {
     if (!isAdmin) {
-      setError('Customer khong co quyen xoa san pham')
+      setError('User khong co quyen xoa san pham')
       return
     }
 
@@ -144,7 +197,7 @@ function App() {
     event.preventDefault()
 
     if (!isAdmin) {
-      setError('Customer chi duoc xem danh sach san pham')
+      setError('User chi duoc xem danh sach san pham')
       return
     }
 
@@ -180,51 +233,78 @@ function App() {
           <p className="tag">React + Express REST API + MongoDB</p>
           <h1>ElectroHub Control Room</h1>
           <p className="hero-text">
-            Quan ly san pham cho admin va trai nghiem duyet mua gon gang cho customer trong cung mot giao dien.
+            Home duoc dung chung cho tat ca nguoi dung. Quyen thao tac chi duoc mo sau khi dang nhap voi vai tro admin hoac user.
           </p>
 
-          <div className="role-switch">
-            <span>Current role</span>
-            <div className="role-tabs">
-              <button
-                type="button"
-                className={isAdmin ? 'active' : ''}
-                onClick={() => {
-                  setRole('admin')
-                  setMessage('Da chuyen sang che do admin')
-                  setError('')
-                }}
-              >
-                Admin
-              </button>
-              <button
-                type="button"
-                className={!isAdmin ? 'active' : ''}
-                onClick={() => {
-                  setRole('customer')
-                  resetForm()
-                  setMessage('Da chuyen sang che do customer')
-                  setError('')
-                }}
-              >
-                Customer
-              </button>
-            </div>
+          <div className="hero-meta">
+            <span className={`role-pill ${currentRole}`}>{currentRole}</span>
+            <span className="hero-hint">Admin co CRUD, user chi xem va tim kiem.</span>
           </div>
         </div>
 
-        <div className="hero-stats">
-          <div className="stat-card accent">
-            <span>Products</span>
-            <strong>{stats.totalProducts}</strong>
+        <div className="hero-side">
+          <div className="hero-stats">
+            <div className="stat-card accent">
+              <span>Products</span>
+              <strong>{stats.totalProducts}</strong>
+            </div>
+            <div className="stat-card">
+              <span>Total stock</span>
+              <strong>{stats.totalStock}</strong>
+            </div>
+            <div className="stat-card">
+              <span>Inventory value</span>
+              <strong>${stats.totalValue.toLocaleString()}</strong>
+            </div>
           </div>
-          <div className="stat-card">
-            <span>Total stock</span>
-            <strong>{stats.totalStock}</strong>
-          </div>
-          <div className="stat-card">
-            <span>Inventory value</span>
-            <strong>${stats.totalValue.toLocaleString()}</strong>
+
+          <div className="login-card">
+            <div className="section-head compact">
+              <div>
+                <p className="section-kicker">Login</p>
+                <h2>{auth ? auth.user.displayName : 'Dang nhap he thong'}</h2>
+              </div>
+            </div>
+
+            {auth ? (
+              <div className="session-box">
+                <p>Tai khoan: <strong>{auth.user.username}</strong></p>
+                <p>Vai tro: <strong>{auth.user.role}</strong></p>
+                <button type="button" className="ghost full" onClick={handleLogout}>
+                  Dang xuat
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="role-tabs">
+                  <button
+                    type="button"
+                    className={loginForm.role === 'admin' ? 'active' : ''}
+                    onClick={() => handleRolePresetChange('admin')}
+                  >
+                    Admin
+                  </button>
+                  <button
+                    type="button"
+                    className={loginForm.role === 'user' ? 'active' : ''}
+                    onClick={() => handleRolePresetChange('user')}
+                  >
+                    User
+                  </button>
+                </div>
+
+                <form className="login-form" onSubmit={handleLogin}>
+                  <input name="username" placeholder="Username" value={loginForm.username} onChange={handleLoginInputChange} />
+                  <input name="password" type="password" placeholder="Password" value={loginForm.password} onChange={handleLoginInputChange} />
+                  <button type="submit" className="full">Dang nhap</button>
+                </form>
+
+                <div className="demo-accounts">
+                  <p>Admin: admin / admin123</p>
+                  <p>User: user / user123</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -261,9 +341,9 @@ function App() {
           <div className="section-head">
             <div>
               <p className="section-kicker">Workspace</p>
-              <h2>{isAdmin ? (editingId ? 'Cap nhat san pham' : 'Them san pham') : 'Customer mode'}</h2>
+              <h2>{isAdmin ? (editingId ? 'Cap nhat san pham' : 'Them san pham') : 'Shared home'}</h2>
             </div>
-            <span className={`role-pill ${role}`}>{role}</span>
+            <span className={`role-pill ${currentRole}`}>{currentRole}</span>
           </div>
 
           {isAdmin ? (
@@ -285,8 +365,8 @@ function App() {
             </form>
           ) : (
             <div className="customer-note">
-              <p>Customer chi co quyen xem, tim kiem va loc san pham.</p>
-              <p>CRUD duoc khoa o ca giao dien va backend.</p>
+              <p>Trang home nay dung chung cho guest, user va admin.</p>
+              <p>Chi sau khi dang nhap bang tai khoan admin moi mo CRUD. User va guest chi duoc xem, tim kiem va loc.</p>
             </div>
           )}
 

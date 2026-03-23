@@ -1,77 +1,13 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const jwt = require('jsonwebtoken');
 const { connectDB, seedProductsIfEmpty, closeDB } = require('./db');
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || 'midterm-secret-key';
-const DEMO_USERS = [
-  {
-    username: 'admin',
-    password: 'admin123',
-    role: 'admin',
-    displayName: 'Administrator',
-  },
-  {
-    username: 'user',
-    password: 'user123',
-    role: 'user',
-    displayName: 'Customer User',
-  },
-];
 
 app.use(cors());
 app.use(express.json());
-
-app.use((req, res, next) => {
-  const authorization = req.header('authorization');
-  req.user = null;
-
-  if (!authorization || !authorization.startsWith('Bearer ')) {
-    return next();
-  }
-
-  const token = authorization.slice(7);
-
-  try {
-    const payload = jwt.verify(token, JWT_SECRET);
-    req.user = {
-      username: payload.username,
-      role: payload.role,
-      displayName: payload.displayName,
-    };
-  } catch (_error) {
-    req.user = null;
-  }
-
-  next();
-});
-
-function buildPermissions(role) {
-  return role === 'admin' ? ['read', 'create', 'update', 'delete'] : ['read'];
-}
-
-function requireAuth(req, res, next) {
-  if (!req.user) {
-    return res.status(401).json({ message: 'Authentication required' });
-  }
-
-  return next();
-}
-
-function requireAdmin(req, res, next) {
-  if (!req.user) {
-    return res.status(401).json({ message: 'Authentication required' });
-  }
-
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Admin role is required for this action' });
-  }
-
-  return next();
-}
 
 function validateProductInput(body) {
   const requiredFields = ['name', 'category', 'price', 'image', 'stock'];
@@ -139,57 +75,7 @@ app.get('/products/:id', async (req, res) => {
   }
 });
 
-app.post('/auth/login', (req, res) => {
-  const { username, password, role } = req.body;
-
-  if (!username || !password || !role) {
-    return res.status(400).json({ message: 'username, password and role are required' });
-  }
-
-  const matchedUser = DEMO_USERS.find(
-    (user) =>
-      user.username === String(username).trim().toLowerCase()
-      && user.password === password
-      && user.role === String(role).trim().toLowerCase(),
-  );
-
-  if (!matchedUser) {
-    return res.status(401).json({ message: 'Invalid credentials or role' });
-  }
-
-  const token = jwt.sign(
-    {
-      username: matchedUser.username,
-      role: matchedUser.role,
-      displayName: matchedUser.displayName,
-    },
-    JWT_SECRET,
-    { expiresIn: '8h' },
-  );
-
-  return res.json({
-    token,
-    user: {
-      username: matchedUser.username,
-      role: matchedUser.role,
-      displayName: matchedUser.displayName,
-      permissions: buildPermissions(matchedUser.role),
-    },
-  });
-});
-
-app.get('/auth/me', requireAuth, (req, res) => {
-  return res.json({
-    user: {
-      username: req.user.username,
-      role: req.user.role,
-      displayName: req.user.displayName,
-      permissions: buildPermissions(req.user.role),
-    },
-  });
-});
-
-app.post('/products', requireAdmin, async (req, res) => {
+app.post('/products', async (req, res) => {
   try {
     const validationError = validateProductInput(req.body);
     if (validationError) {
@@ -221,7 +107,7 @@ app.post('/products', requireAdmin, async (req, res) => {
   }
 });
 
-app.put('/products/:id', requireAdmin, async (req, res) => {
+app.put('/products/:id', async (req, res) => {
   try {
     const id = Number(req.params.id);
     const validationError = validateProductInput(req.body);
@@ -252,7 +138,7 @@ app.put('/products/:id', requireAdmin, async (req, res) => {
   }
 });
 
-app.delete('/products/:id', requireAdmin, async (req, res) => {
+app.delete('/products/:id', async (req, res) => {
   try {
     const id = Number(req.params.id);
     const productsCollection = await getProductsCollection();
