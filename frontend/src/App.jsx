@@ -19,6 +19,7 @@ function App() {
   const [formData, setFormData] = useState(initialForm)
   const [editingId, setEditingId] = useState(null)
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [detailProduct, setDetailProduct] = useState(null)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -237,7 +238,7 @@ function App() {
                   <p>Stock: {product.stock}</p>
                 </div>
                 <div className="card-actions">
-                  <button onClick={() => setSelectedProduct(product)}>View</button>
+                  <button onClick={() => setDetailProduct(product)}>View</button>
                   <button onClick={() => handleEdit(product)}>Edit</button>
                   <button className="danger" onClick={() => handleDelete(product.id)}>Delete</button>
                 </div>
@@ -247,6 +248,46 @@ function App() {
           </div>
         )}
       </section>
+
+      {detailProduct && (
+        <div className="modal-overlay" onClick={() => setDetailProduct(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setDetailProduct(null)}>×</button>
+            <div className="modal-body">
+              <img src={detailProduct.image} alt={detailProduct.name} className="modal-image" />
+              <div className="modal-info">
+                <h2>{detailProduct.name}</h2>
+                <div className="detail-row">
+                  <span className="label">ID:</span>
+                  <span className="value">#{detailProduct.id}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="label">Danh mục:</span>
+                  <span className="value">{detailProduct.category}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="label">Giá:</span>
+                  <span className="value price-large">${detailProduct.price.toLocaleString()}</span>
+                </div>
+                <div className="detail-row">
+                  <span className="label">Tồn kho:</span>
+                  <span className="value">{detailProduct.stock} sản phẩm</span>
+                </div>
+                <div className="modal-actions">
+                  <button onClick={() => {
+                    handleEdit(detailProduct)
+                    setDetailProduct(null)
+                  }}>Edit</button>
+                  <button className="danger" onClick={() => {
+                    handleDelete(detailProduct.id)
+                    setDetailProduct(null)
+                  }}>Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
