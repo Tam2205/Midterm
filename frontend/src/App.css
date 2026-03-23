@@ -33,6 +33,19 @@
   margin-top: 0.8rem;
 }
 
+.hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.hero-hint {
+  color: #56747d;
+  font-size: 0.92rem;
+}
+
 .hero-stats {
   flex: 0 0 320px;
   display: grid;
