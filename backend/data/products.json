@@ -1,0 +1,49 @@
+[
+  {
+    "id": 1,
+    "name": "Laptop Dell XPS 13",
+    "category": "Laptop",
+    "price": 2500,
+    "image": "https://trevortan.com/wp-content/uploads/2022/09/ZenBook-Pro-14-Duo-00.jpg",
+    "stock": 5
+  },
+  {
+    "id": 2,
+    "name": "iPhone 14",
+    "category": "Phone",
+    "price": 1200,
+    "image": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300",
+    "stock": 10
+  },{
+    "id": 5,
+    "name": "Sony Alpha A7R V",
+    "category": "Camera",
+    "price": 1500,
+    "image": "https://bncamera.com/wp-content/uploads/2023/06/sony-alpha-a7r-1536x1536.jpg",
+    "stock": 55
+  },
+  {
+    "id": 6,
+    "name": "Sony Alpha A7 V",
+    "category": "Camera",
+    "price": 1200,
+    "image":"https://bncamera.com/wp-content/uploads/2025/07/sony-a7v-1.jpg",
+    "stock": 20
+  },
+  {
+    "id": 3,
+    "name": "Samsung Galaxy S26 Ultra",
+    "category": "Phone",
+    "price": 1100,
+    "image": "https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/s/a/samsung-galaxy-s26-ultra-12_1.jpg",
+    "stock": 8
+  },
+  {
+    "id": 4,
+    "name": "MacBook Pro 14 M5 10CPU 10GPU",
+    "category": "Laptop",
+    "price": 41490000,
+    "image": "https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/t/e/text_ng_n_2__11.png",
+    "stock": 3
+  }
+]
