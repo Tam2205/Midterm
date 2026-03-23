@@ -230,6 +230,11 @@ select:focus {
   box-shadow: 0 0 0 3px rgba(17, 75, 95, 0.1);
 }
 
+input:invalid:not(:placeholder-shown) {
+  border-color: #d84d4d;
+  box-shadow: 0 0 0 3px rgba(216, 77, 77, 0.1);
+}
+
 .role-pill {
   display: inline-flex;
   align-items: center;

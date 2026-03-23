@@ -126,6 +126,28 @@ function App() {
     setMessage('')
     setError('')
 
+    // Validation trước khi submit
+    if (!formData.name.trim()) {
+      setError('Vui lòng nhập tên sản phẩm')
+      return
+    }
+    if (!formData.category.trim()) {
+      setError('Vui lòng chọn danh mục')
+      return
+    }
+    if (!formData.price || Number(formData.price) <= 0) {
+      setError('Giá phải lớn hơn 0')
+      return
+    }
+    if (!formData.image.trim()) {
+      setError('Vui lòng nhập URL ảnh')
+      return
+    }
+    if (!formData.stock || Number(formData.stock) < 0) {
+      setError('Tồn kho không được âm')
+      return
+    }
+
     const payload = {
       ...formData,
       price: Number(formData.price),
@@ -135,10 +157,10 @@ function App() {
     try {
       if (editingId) {
         await api.put(`/products/${editingId}`, payload)
-        setMessage('Cap nhat san pham thanh cong')
+        setMessage('Cập nhật sản phẩm thành công')
       } else {
         await api.post('/products', payload)
-        setMessage('Them san pham thanh cong')
+        setMessage('Thêm sản phẩm thành công')
       }
 
       resetForm()
@@ -189,23 +211,23 @@ function App() {
           <div className="section-head">
             <div>
               <p className="section-kicker">Workspace</p>
-              <h2>{editingId ? 'Cap nhat san pham' : 'Them san pham'}</h2>
+              <h2>{editingId ? 'Cập nhật sản phẩm' : 'Thêm sản phẩm'}</h2>
             </div>
             <span className="role-pill live">CRUD</span>
           </div>
 
           <form className="product-form" onSubmit={handleSubmit}>
-            <input name="name" placeholder="Ten san pham" value={formData.name} onChange={handleInputChange} />
-            <input name="category" placeholder="Danh muc" value={formData.category} onChange={handleInputChange} />
-            <input name="price" type="number" min="0" step="1" placeholder="Gia" value={formData.price} onChange={handleInputChange} />
-            <input name="image" placeholder="Image URL" value={formData.image} onChange={handleInputChange} />
-            <input name="stock" type="number" min="0" step="1" placeholder="Ton kho" value={formData.stock} onChange={handleInputChange} />
+            <input name="name" placeholder="Tên sản phẩm *" value={formData.name} onChange={handleInputChange} required />
+            <input name="category" placeholder="Danh mục *" value={formData.category} onChange={handleInputChange} required />
+            <input name="price" type="number" min="0.01" step="1" placeholder="Giá *" value={formData.price} onChange={handleInputChange} required />
+            <input name="image" placeholder="Image URL *" value={formData.image} onChange={handleInputChange} required />
+            <input name="stock" type="number" min="0" step="1" placeholder="Tồn kho *" value={formData.stock} onChange={handleInputChange} required />
 
             <div className="form-actions">
-              <button type="submit">{editingId ? 'Update' : 'Create'}</button>
+              <button type="submit">{editingId ? 'Cập nhật' : 'Thêm mới'}</button>
               {editingId && (
                 <button type="button" className="ghost" onClick={resetForm}>
-                  Cancel
+                  Hủy
                 </button>
               )}
             </div>
