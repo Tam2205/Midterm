@@ -149,19 +149,26 @@ function App() {
 
   return (
     <div className="page">
+      <div className="app-header">
+        <div className="header-content">
+          <h1>ElectroHub</h1>
+          <p>Quản lý sản phẩm tối ưu</p>
+        </div>
+      </div>
+
       <section className="toolbar panel">
         <form className="search-form" onSubmit={handleSearchSubmit}>
           <input
             type="text"
-            placeholder="Tim san pham..."
+            placeholder="🔍 Tìm sản phẩm..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
-          <button type="submit">Search</button>
+          <button type="submit">Tìm kiếm</button>
         </form>
 
         <div className="controls">
-          <label htmlFor="category">Category</label>
+          <label htmlFor="category">Danh mục</label>
           <select
             id="category"
             value={category}
