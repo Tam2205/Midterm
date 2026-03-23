@@ -206,28 +206,6 @@ function App() {
           {message && <p className="ok">{message}</p>}
           {error && <p className="err">{error}</p>}
         </article>
-
-        <article className="panel spotlight-panel">
-          <div className="section-head">
-            <div>
-              <p className="section-kicker">Featured</p>
-              <h2>{selectedProduct ? selectedProduct.name : 'Chon mot san pham'}</h2>
-            </div>
-          </div>
-
-          {selectedProduct ? (
-            <div className="spotlight-card">
-              <img src={selectedProduct.image} alt={selectedProduct.name} />
-              <div className="spotlight-copy">
-                <span className="badge">{selectedProduct.category}</span>
-                <strong>${selectedProduct.price.toLocaleString()}</strong>
-                <p>Con lai {selectedProduct.stock} san pham trong kho.</p>
-              </div>
-            </div>
-          ) : (
-            <p>Khong co san pham duoc chon.</p>
-          )}
-        </article>
       </section>
 
       <section className="panel list-panel">
