@@ -5,9 +5,24 @@ const { connectDB, seedProductsIfEmpty, closeDB } = require('./db');
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
+const ALLOWED_ROLES = ['admin', 'customer'];
 
 app.use(cors());
 app.use(express.json());
+
+app.use((req, res, next) => {
+  const incomingRole = String(req.header('x-user-role') || 'customer').toLowerCase();
+  req.userRole = ALLOWED_ROLES.includes(incomingRole) ? incomingRole : 'customer';
+  next();
+});
+
+function requireAdmin(req, res, next) {
+  if (req.userRole !== 'admin') {
+    return res.status(403).json({ message: 'Admin role is required for this action' });
+  }
+
+  return next();
+}
 
 function validateProductInput(body) {
   const requiredFields = ['name', 'category', 'price', 'image', 'stock'];
@@ -75,7 +90,11 @@ app.get('/products/:id', async (req, res) => {
   }
 });
 
-app.post('/products', async (req, res) => {
+app.get('/auth/me', (req, res) => {
+  res.json({ role: req.userRole, permissions: req.userRole === 'admin' ? ['read', 'create', 'update', 'delete'] : ['read'] });
+});
+
+app.post('/products', requireAdmin, async (req, res) => {
   try {
     const validationError = validateProductInput(req.body);
     if (validationError) {
@@ -107,7 +126,7 @@ app.post('/products', async (req, res) => {
   }
 });
 
-app.put('/products/:id', async (req, res) => {
+app.put('/products/:id', requireAdmin, async (req, res) => {
   try {
     const id = Number(req.params.id);
     const validationError = validateProductInput(req.body);
@@ -138,7 +157,7 @@ app.put('/products/:id', async (req, res) => {
   }
 });
 
-app.delete('/products/:id', async (req, res) => {
+app.delete('/products/:id', requireAdmin, async (req, res) => {
   try {
     const id = Number(req.params.id);
     const productsCollection = await getProductsCollection();
