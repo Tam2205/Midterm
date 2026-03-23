@@ -37,7 +37,6 @@ app.get('/products', async (req, res) => {
   try {
     const productsCollection = await getProductsCollection();
     const { category, search } = req.query;
-
     const query = {};
 
     if (category) {
@@ -63,8 +62,8 @@ app.get('/products/:id', async (req, res) => {
   try {
     const id = Number(req.params.id);
     const productsCollection = await getProductsCollection();
-
     const product = await productsCollection.findOne({ id }, { projection: { _id: 0 } });
+
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
@@ -90,7 +89,6 @@ app.post('/products', async (req, res) => {
       .toArray();
 
     const nextId = maxProduct.length > 0 ? maxProduct[0].id + 1 : 1;
-
     const newProduct = {
       id: nextId,
       name: req.body.name,
@@ -142,8 +140,8 @@ app.delete('/products/:id', async (req, res) => {
   try {
     const id = Number(req.params.id);
     const productsCollection = await getProductsCollection();
-
     const result = await productsCollection.deleteOne({ id });
+
     if (result.deletedCount === 0) {
       return res.status(404).json({ message: 'Product not found' });
     }
